@@ -11,39 +11,43 @@ class USpringArmComponent;
 class UCameraComponent;
 class UInputMappingContext;
 class UInputAction;
+class UEnhancedInputLocalPlayerSubsystem;
 
 UCLASS()
 class MONSTROSITY_API AMonstrosityCharacter : public ACharacter
 {
-	GENERATED_BODY()
+    GENERATED_BODY()
 
 public:
-	AMonstrosityCharacter();
+    AMonstrosityCharacter();
     virtual void Tick(float DeltaTime) override;
     virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
+    FORCEINLINE TObjectPtr<UEnhancedInputLocalPlayerSubsystem> GetInputSubsystem(){ return InputSubsystem;}
+
 protected:
-	virtual void BeginPlay() override;
+    virtual void BeginPlay() override;
 
-    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Enhanced Input")
-    TObjectPtr<UInputMappingContext> InputMapping;
+    UPROPERTY(EditDefaultsOnly, Category = "Controls|Input Mappings")
+    TSoftObjectPtr<UInputMappingContext> IM_Character;
+    UPROPERTY(EditDefaultsOnly, Category = "Controls|Input Actions")
+    TSoftObjectPtr<UInputAction> IA_InputMove;
+    UPROPERTY(EditDefaultsOnly, Category = "Controls|Input Actions")
+    TSoftObjectPtr<UInputAction> IA_InputLook;
 
-    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-    TObjectPtr<UInputAction> InputMove;
-
-    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-    TObjectPtr<UInputAction> InputLook;
-
-    TArray<TObjectPtr<UInputAction>> AllInputActions;
+    TArray<TSoftObjectPtr<UInputAction>> AllInputActions;
 
 private:
     UPROPERTY(VisibleAnywhere, Category = Camera)
     TObjectPtr<USpringArmComponent> CameraBoom;
     UPROPERTY(VisibleAnywhere, Category = Camera)
     TObjectPtr<UCameraComponent> FollowCamera;
+    TObjectPtr<UEnhancedInputLocalPlayerSubsystem> InputSubsystem;
 
-    void MoveBackAndForward(const FInputActionValue& ActionValue);
-  /*  void MoveLeftAndRight(const FInputActionValue& ActionValue);
-    void TurnAtRate(const FInputActionValue& ActionValue);
-    void LookUpRate(const FInputActionValue& ActionValue);*/
+    void PrepareInputSubsystem();
+    void AddingMappingContext(TObjectPtr<UEnhancedInputLocalPlayerSubsystem> Subsystem, const TSoftObjectPtr<UInputMappingContext> MappingContext);
+    void BindInputActions(const TObjectPtr<UInputComponent> PlayerInputComponent);
+    bool DoInputActionsValid();
+    void Movement(const struct FInputActionValue& ActionValue);
+    void Looking(const struct FInputActionValue& ActionValue);
 };

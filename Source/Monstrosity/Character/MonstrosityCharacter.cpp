@@ -6,15 +6,15 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "Camera/CameraComponent.h"
 #include "InputMappingContext.h"
-#include "EnhancedInputSubsystems.h"
-#include "EnhancedInputComponent.h"
 #include "InputAction.h"
+#include "EnhancedInputComponent.h"
+#include "EnhancedInputSubsystems.h"
+#include "InputActionValue.h"
 
-//#include "../../../../../../UE_5.1/Engine/Plugins/EnhancedInput/Source/EnhancedInput/Public/EnhancedInputSubsystems.h"
 
 AMonstrosityCharacter::AMonstrosityCharacter()
 {
-	PrimaryActorTick.bCanEverTick = true;
+    PrimaryActorTick.bCanEverTick = true;
 
     CameraBoom = CreateDefaultSubobject<USpringArmComponent>("CameraBoom");
     CameraBoom->SetupAttachment(GetMesh());
@@ -28,74 +28,90 @@ AMonstrosityCharacter::AMonstrosityCharacter()
 
 void AMonstrosityCharacter::BeginPlay()
 {
-	Super::BeginPlay();
+    Super::BeginPlay();
 }
 
 void AMonstrosityCharacter::Tick(float DeltaTime)
 {
-	Super::Tick(DeltaTime);
+    Super::Tick(DeltaTime);
 }
 
 void AMonstrosityCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
-	Super::SetupPlayerInputComponent(PlayerInputComponent);
+    Super::SetupPlayerInputComponent(PlayerInputComponent);
 
-    APlayerController* PlayerController = Cast<APlayerController>(GetController());
+    PrepareInputSubsystem();
+    AddingMappingContext(InputSubsystem, IM_Character);
+    BindInputActions(PlayerInputComponent);
+}
 
+void AMonstrosityCharacter::PrepareInputSubsystem()
+{
+    TObjectPtr<APlayerController> PlayerController = Cast<APlayerController>(GetWorld()->GetFirstPlayerController());
     if (!PlayerController)
         return;
 
-    if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
+    TObjectPtr<ULocalPlayer> LocalPlayer = PlayerController->GetLocalPlayer();
+    if (LocalPlayer)
+    {
+        InputSubsystem = LocalPlayer->GetSubsystem<UEnhancedInputLocalPlayerSubsystem>();
+    }
+}
+
+void AMonstrosityCharacter::AddingMappingContext(TObjectPtr<UEnhancedInputLocalPlayerSubsystem> Subsystem, const TSoftObjectPtr<UInputMappingContext> MappingContext)
+{
+    if (Subsystem && !MappingContext.IsNull())
     {
         Subsystem->ClearAllMappings();
-
-        if (!InputMapping)
-            return;
-        Subsystem->AddMappingContext(InputMapping, 0);
+        Subsystem->AddMappingContext(MappingContext.LoadSynchronous(), 0);
     }
+}
 
-    UEnhancedInputComponent* PlayerEnhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerInputComponent);
+void AMonstrosityCharacter::BindInputActions(const TObjectPtr<UInputComponent> PlayerInputComponent)
+{
+    TObjectPtr<UEnhancedInputComponent> PlayerEnhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerInputComponent);
     if (!PlayerEnhancedInputComponent)
         return;
 
-    AllInputActions.Emplace(InputMove);
-    AllInputActions.Emplace(InputLook);
+    if (DoInputActionsValid())
+    {
+        PlayerEnhancedInputComponent->BindAction(IA_InputMove.LoadSynchronous(), ETriggerEvent::Triggered, this, &ThisClass::Movement);
+        PlayerEnhancedInputComponent->BindAction(IA_InputLook.LoadSynchronous(), ETriggerEvent::Triggered, this, &ThisClass::Looking);
+    }
+}
 
-    bool bIsActionsValid{ true };
+bool AMonstrosityCharacter::DoInputActionsValid()
+{
+    AllInputActions.Add(IA_InputMove);
+    AllInputActions.Add(IA_InputLook);
+
     for (auto Action : AllInputActions)
     {
         if (!Action)
         {
-            UE_LOG(LogTemp, Warning, TEXT("The %s action is not valid"), *Action->GetName());
-            bIsActionsValid =  false;
+            UE_LOG(LogTemp, Warning, TEXT("Some input actions are not valid."));
+            return false;
         }
     }
 
-    if (bIsActionsValid)
-    {
-        PlayerEnhancedInputComponent->BindAction(InputMove, ETriggerEvent::Started, this, &ThisClass::MoveBackAndForward);
-    }
+    return true;
 }
 
-void AMonstrosityCharacter::MoveBackAndForward(const FInputActionValue& ActionValue)
+void AMonstrosityCharacter::Movement(const FInputActionValue& ActionValue)
 {
-     // Debug log output to confirm that the handler function is running.
-    //UE_LOG(LogTemp, Warning, TEXT("%s called with Input Action Value %s (magnitude %f)"), *ActionValue.ToString(), ActionValue.GetMagnitude());
-    UE_LOG(LogTemp, Warning, TEXT("MoveBackAndForward"));
+    FVector2D Movement{ ActionValue.Get<FVector2D>() };
 
-    // Use the GetType() function to determine Value's type, and the [] operator with an index between 0 and 2 to access its data.
+    const FVector ForwardDirection{ GetActorForwardVector() };
+    const FVector RightDirection(GetActorRightVector());
+
+    AddMovementInput(RightDirection, Movement.X);
+    AddMovementInput(ForwardDirection, Movement.Y);
 }
 
-//void AMonstrosityCharacter::MoveLeftAndRight(const FInputActionValue& ActionValue)
-//{
-//    //UE_LOG(LogTemp, Warning, TEXT("MoveLeftAndRight: %i"), (int)ActionValue.GetValueType());
-//}
-//
-//void AMonstrosityCharacter::TurnAtRate(const FInputActionValue& ActionValue)
-//{
-//}
-//
-//void AMonstrosityCharacter::LookUpRate(const FInputActionValue& ActionValue)
-//{
-//    //UE_LOG(LogTemp, Warning, TEXT("LookUp: %f"), (float)ActionValue.GetValueType());
-//}
+void AMonstrosityCharacter::Looking(const FInputActionValue& ActionValue)
+{
+    FVector2D LookAxis{ ActionValue.Get<FVector2D>() };
+
+    AddControllerYawInput(LookAxis.X);
+    AddControllerPitchInput(LookAxis.Y);
+}
