@@ -31,6 +31,8 @@ protected:
     UPROPERTY(EditDefaultsOnly, Category = "Controls|Input Mappings")
     TSoftObjectPtr<UInputMappingContext> IM_Character;
     UPROPERTY(EditDefaultsOnly, Category = "Controls|Input Actions")
+    TSoftObjectPtr<UInputAction> IA_Jump;
+    UPROPERTY(EditDefaultsOnly, Category = "Controls|Input Actions")
     TSoftObjectPtr<UInputAction> IA_InputMove;
     UPROPERTY(EditDefaultsOnly, Category = "Controls|Input Actions")
     TSoftObjectPtr<UInputAction> IA_InputLook;
@@ -48,6 +50,7 @@ private:
     void AddingMappingContext(TObjectPtr<UEnhancedInputLocalPlayerSubsystem> Subsystem, const TSoftObjectPtr<UInputMappingContext> MappingContext);
     void BindInputActions(const TObjectPtr<UInputComponent> PlayerInputComponent);
     bool DoInputActionsValid();
+    void DoJump(const struct FInputActionValue& ActionValue);
     void Movement(const struct FInputActionValue& ActionValue);
     void Looking(const struct FInputActionValue& ActionValue);
 };

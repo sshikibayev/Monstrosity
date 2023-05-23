@@ -10,6 +10,7 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "InputActionValue.h"
+#include "GameFramework/CharacterMovementComponent.h"
 
 
 AMonstrosityCharacter::AMonstrosityCharacter()
@@ -24,6 +25,9 @@ AMonstrosityCharacter::AMonstrosityCharacter()
     FollowCamera = CreateDefaultSubobject<UCameraComponent>("FollowCamera");
     FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
     FollowCamera->bUsePawnControlRotation = false;
+
+    bUseControllerRotationYaw = false;
+    GetCharacterMovement()->bOrientRotationToMovement = true;
 }
 
 void AMonstrosityCharacter::BeginPlay()
@@ -75,6 +79,7 @@ void AMonstrosityCharacter::BindInputActions(const TObjectPtr<UInputComponent> P
 
     if (DoInputActionsValid())
     {
+        PlayerEnhancedInputComponent->BindAction(IA_Jump.LoadSynchronous(), ETriggerEvent::Triggered, this, &ThisClass::DoJump);
         PlayerEnhancedInputComponent->BindAction(IA_InputMove.LoadSynchronous(), ETriggerEvent::Triggered, this, &ThisClass::Movement);
         PlayerEnhancedInputComponent->BindAction(IA_InputLook.LoadSynchronous(), ETriggerEvent::Triggered, this, &ThisClass::Looking);
     }
@@ -82,6 +87,7 @@ void AMonstrosityCharacter::BindInputActions(const TObjectPtr<UInputComponent> P
 
 bool AMonstrosityCharacter::DoInputActionsValid()
 {
+    AllInputActions.Add(IA_Jump);
     AllInputActions.Add(IA_InputMove);
     AllInputActions.Add(IA_InputLook);
 
@@ -95,6 +101,16 @@ bool AMonstrosityCharacter::DoInputActionsValid()
     }
 
     return true;
+}
+
+void AMonstrosityCharacter::DoJump(const FInputActionValue& ActionValue)
+{
+    bool bIsPressed{ ActionValue.Get<bool>() };
+
+    if (bIsPressed)
+    {
+        Jump();
+    }
 }
 
 void AMonstrosityCharacter::Movement(const FInputActionValue& ActionValue)
