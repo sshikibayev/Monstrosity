@@ -12,6 +12,7 @@ class UCameraComponent;
 class UInputMappingContext;
 class UInputAction;
 class UEnhancedInputLocalPlayerSubsystem;
+class UWidgetComponent;
 
 UCLASS()
 class MONSTROSITY_API AMonstrosityCharacter : public ACharacter
@@ -45,6 +46,8 @@ private:
     UPROPERTY(VisibleAnywhere, Category = Camera)
     TObjectPtr<UCameraComponent> FollowCamera;
     TObjectPtr<UEnhancedInputLocalPlayerSubsystem> InputSubsystem;
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Widget, meta = (AllowPrivateAccess = "true"))
+    TObjectPtr<UWidgetComponent> OverheadWidget;
 
     void PrepareInputSubsystem();
     void AddingMappingContext(TObjectPtr<UEnhancedInputLocalPlayerSubsystem> Subsystem, const TSoftObjectPtr<UInputMappingContext> MappingContext);

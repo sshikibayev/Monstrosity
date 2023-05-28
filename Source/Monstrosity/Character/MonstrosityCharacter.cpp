@@ -11,6 +11,7 @@
 #include "EnhancedInputSubsystems.h"
 #include "InputActionValue.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Components/WidgetComponent.h"
 
 
 AMonstrosityCharacter::AMonstrosityCharacter()
@@ -28,6 +29,9 @@ AMonstrosityCharacter::AMonstrosityCharacter()
 
     bUseControllerRotationYaw = false;
     GetCharacterMovement()->bOrientRotationToMovement = true;
+
+    OverheadWidget = CreateDefaultSubobject<UWidgetComponent>("OverheadWidget");
+    OverheadWidget->SetupAttachment(RootComponent);
 }
 
 void AMonstrosityCharacter::BeginPlay()
@@ -51,7 +55,7 @@ void AMonstrosityCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInp
 
 void AMonstrosityCharacter::PrepareInputSubsystem()
 {
-    TObjectPtr<APlayerController> PlayerController = Cast<APlayerController>(GetWorld()->GetFirstPlayerController());
+    TObjectPtr<APlayerController> PlayerController = CastChecked<APlayerController>(GetWorld()->GetFirstPlayerController());
     if (!PlayerController)
         return;
 
@@ -73,7 +77,7 @@ void AMonstrosityCharacter::AddingMappingContext(TObjectPtr<UEnhancedInputLocalP
 
 void AMonstrosityCharacter::BindInputActions(const TObjectPtr<UInputComponent> PlayerInputComponent)
 {
-    TObjectPtr<UEnhancedInputComponent> PlayerEnhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerInputComponent);
+    TObjectPtr<UEnhancedInputComponent> PlayerEnhancedInputComponent = CastChecked<UEnhancedInputComponent>(PlayerInputComponent, ECastCheckedType::NullChecked);
     if (!PlayerEnhancedInputComponent)
         return;
 
