@@ -12,6 +12,9 @@
 #include "InputActionValue.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Components/WidgetComponent.h"
+#include "Net/UnrealNetwork.h"
+#include "Monstrosity/Weapons/Weapon.h"
+#include "Monstrosity/MonstrosityComponents/CombatComponent.h"
 
 
 AMonstrosityCharacter::AMonstrosityCharacter()
@@ -32,6 +35,9 @@ AMonstrosityCharacter::AMonstrosityCharacter()
 
     OverheadWidget = CreateDefaultSubobject<UWidgetComponent>("OverheadWidget");
     OverheadWidget->SetupAttachment(RootComponent);
+
+    CombatComponent = CreateDefaultSubobject<UCombatComponent>("CombatComponent");
+    CombatComponent->SetIsReplicated(true);
 }
 
 void AMonstrosityCharacter::BeginPlay()
@@ -44,6 +50,34 @@ void AMonstrosityCharacter::Tick(float DeltaTime)
     Super::Tick(DeltaTime);
 }
 
+void AMonstrosityCharacter::PostInitializeComponents()
+{
+    Super::PostInitializeComponents();
+
+    if (CombatComponent)
+    {
+        CombatComponent->Character = this;
+    }
+}
+
+void AMonstrosityCharacter::SetOverlappingWeapon(TObjectPtr<AWeapon> Weapon)
+{
+    if (OverlappingWeapon)
+    {
+        OverlappingWeapon->ShowPickupWidget(false);
+    }
+
+    OverlappingWeapon = Weapon;
+
+    if (IsLocallyControlled())
+    {
+        if (OverlappingWeapon)
+        {
+            OverlappingWeapon->ShowPickupWidget(true);
+        }
+    }
+}
+
 void AMonstrosityCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
     Super::SetupPlayerInputComponent(PlayerInputComponent);
@@ -51,6 +85,26 @@ void AMonstrosityCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInp
     PrepareInputSubsystem();
     AddingMappingContext(InputSubsystem, IM_Character);
     BindInputActions(PlayerInputComponent);
+}
+
+void AMonstrosityCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+    Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+    DOREPLIFETIME_CONDITION(AMonstrosityCharacter, OverlappingWeapon, COND_OwnerOnly);
+}
+
+void AMonstrosityCharacter::OnRep_OverlappingWeapon(AWeapon* LastWeapon)
+{
+    if (OverlappingWeapon)
+    {
+        OverlappingWeapon->ShowPickupWidget(true);
+    }
+
+    if (LastWeapon)
+    {
+        LastWeapon->ShowPickupWidget(false);
+    }
 }
 
 void AMonstrosityCharacter::PrepareInputSubsystem()
@@ -84,6 +138,7 @@ void AMonstrosityCharacter::BindInputActions(const TObjectPtr<UInputComponent> P
     if (DoInputActionsValid())
     {
         PlayerEnhancedInputComponent->BindAction(IA_Jump.LoadSynchronous(), ETriggerEvent::Triggered, this, &ThisClass::DoJump);
+        PlayerEnhancedInputComponent->BindAction(IA_Equip.LoadSynchronous(), ETriggerEvent::Triggered, this, &ThisClass::Equipped);
         PlayerEnhancedInputComponent->BindAction(IA_InputMove.LoadSynchronous(), ETriggerEvent::Triggered, this, &ThisClass::Movement);
         PlayerEnhancedInputComponent->BindAction(IA_InputLook.LoadSynchronous(), ETriggerEvent::Triggered, this, &ThisClass::Looking);
     }
@@ -91,9 +146,10 @@ void AMonstrosityCharacter::BindInputActions(const TObjectPtr<UInputComponent> P
 
 bool AMonstrosityCharacter::DoInputActionsValid()
 {
-    AllInputActions.Add(IA_Jump);
-    AllInputActions.Add(IA_InputMove);
-    AllInputActions.Add(IA_InputLook);
+    AllInputActions.Emplace(IA_Jump);
+    AllInputActions.Emplace(IA_InputMove);
+    AllInputActions.Emplace(IA_InputLook);
+    AllInputActions.Emplace(IA_Equip);
 
     for (auto Action : AllInputActions)
     {
@@ -114,6 +170,18 @@ void AMonstrosityCharacter::DoJump(const FInputActionValue& ActionValue)
     if (bIsPressed)
     {
         Jump();
+    }
+}
+
+void AMonstrosityCharacter::Equipped(const FInputActionValue& ActionValue)
+{
+    bool bIsPressed{ ActionValue.Get<bool>() };
+    if (bIsPressed)
+    {
+        if (HasAuthority() && CombatComponent)
+        {
+            CombatComponent->EquipWeapon(OverlappingWeapon);
+        }
     }
 }
 
