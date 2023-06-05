@@ -61,7 +61,6 @@ private:
 
     UPROPERTY(ReplicatedUsing = OnRep_OverlappingWeapon)
     TObjectPtr<AWeapon> OverlappingWeapon;
-
     UFUNCTION()
     void OnRep_OverlappingWeapon(AWeapon* LastWeapon);
 
@@ -69,8 +68,8 @@ private:
     void AddingMappingContext(TObjectPtr<UEnhancedInputLocalPlayerSubsystem> Subsystem, const TSoftObjectPtr<UInputMappingContext> MappingContext);
     void BindInputActions(const TObjectPtr<UInputComponent> PlayerInputComponent);
     bool DoInputActionsValid();
-    void DoJump(const struct FInputActionValue& ActionValue);
-    void Equipped(const struct FInputActionValue& ActionValue);
+    void DoJump();
+    void Equipped();
     void Movement(const struct FInputActionValue& ActionValue);
     void Looking(const struct FInputActionValue& ActionValue);
 };

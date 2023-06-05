@@ -38,6 +38,8 @@ AMonstrosityCharacter::AMonstrosityCharacter()
 
     CombatComponent = CreateDefaultSubobject<UCombatComponent>("CombatComponent");
     CombatComponent->SetIsReplicated(true);
+
+    bReplicates = true;
 }
 
 void AMonstrosityCharacter::BeginPlay()
@@ -58,6 +60,13 @@ void AMonstrosityCharacter::PostInitializeComponents()
     {
         CombatComponent->Character = this;
     }
+}
+
+void AMonstrosityCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+    Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+    DOREPLIFETIME_CONDITION(AMonstrosityCharacter, OverlappingWeapon, COND_OwnerOnly);
 }
 
 void AMonstrosityCharacter::SetOverlappingWeapon(TObjectPtr<AWeapon> Weapon)
@@ -87,13 +96,6 @@ void AMonstrosityCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInp
     BindInputActions(PlayerInputComponent);
 }
 
-void AMonstrosityCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
-{
-    Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-
-    DOREPLIFETIME_CONDITION(AMonstrosityCharacter, OverlappingWeapon, COND_OwnerOnly);
-}
-
 void AMonstrosityCharacter::OnRep_OverlappingWeapon(AWeapon* LastWeapon)
 {
     if (OverlappingWeapon)
@@ -109,7 +111,7 @@ void AMonstrosityCharacter::OnRep_OverlappingWeapon(AWeapon* LastWeapon)
 
 void AMonstrosityCharacter::PrepareInputSubsystem()
 {
-    TObjectPtr<APlayerController> PlayerController = CastChecked<APlayerController>(GetWorld()->GetFirstPlayerController());
+    TObjectPtr<APlayerController> PlayerController = Cast<APlayerController>(GetWorld()->GetFirstPlayerController());
     if (!PlayerController)
         return;
 
@@ -131,14 +133,14 @@ void AMonstrosityCharacter::AddingMappingContext(TObjectPtr<UEnhancedInputLocalP
 
 void AMonstrosityCharacter::BindInputActions(const TObjectPtr<UInputComponent> PlayerInputComponent)
 {
-    TObjectPtr<UEnhancedInputComponent> PlayerEnhancedInputComponent = CastChecked<UEnhancedInputComponent>(PlayerInputComponent, ECastCheckedType::NullChecked);
+    TObjectPtr<UEnhancedInputComponent> PlayerEnhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerInputComponent);
     if (!PlayerEnhancedInputComponent)
         return;
 
     if (DoInputActionsValid())
     {
-        PlayerEnhancedInputComponent->BindAction(IA_Jump.LoadSynchronous(), ETriggerEvent::Triggered, this, &ThisClass::DoJump);
-        PlayerEnhancedInputComponent->BindAction(IA_Equip.LoadSynchronous(), ETriggerEvent::Triggered, this, &ThisClass::Equipped);
+        PlayerEnhancedInputComponent->BindAction(IA_Jump.LoadSynchronous(), ETriggerEvent::Started, this, &ThisClass::DoJump);
+        PlayerEnhancedInputComponent->BindAction(IA_Equip.LoadSynchronous(), ETriggerEvent::Started, this, &ThisClass::Equipped);
         PlayerEnhancedInputComponent->BindAction(IA_InputMove.LoadSynchronous(), ETriggerEvent::Triggered, this, &ThisClass::Movement);
         PlayerEnhancedInputComponent->BindAction(IA_InputLook.LoadSynchronous(), ETriggerEvent::Triggered, this, &ThisClass::Looking);
     }
@@ -163,26 +165,9 @@ bool AMonstrosityCharacter::DoInputActionsValid()
     return true;
 }
 
-void AMonstrosityCharacter::DoJump(const FInputActionValue& ActionValue)
+void AMonstrosityCharacter::DoJump()
 {
-    bool bIsPressed{ ActionValue.Get<bool>() };
-
-    if (bIsPressed)
-    {
-        Jump();
-    }
-}
-
-void AMonstrosityCharacter::Equipped(const FInputActionValue& ActionValue)
-{
-    bool bIsPressed{ ActionValue.Get<bool>() };
-    if (bIsPressed)
-    {
-        if (HasAuthority() && CombatComponent)
-        {
-            CombatComponent->EquipWeapon(OverlappingWeapon);
-        }
-    }
+    Jump();
 }
 
 void AMonstrosityCharacter::Movement(const FInputActionValue& ActionValue)
@@ -202,4 +187,12 @@ void AMonstrosityCharacter::Looking(const FInputActionValue& ActionValue)
 
     AddControllerYawInput(LookAxis.X);
     AddControllerPitchInput(LookAxis.Y);
+}
+
+void AMonstrosityCharacter::Equipped()
+{
+    if (HasAuthority() && CombatComponent)
+    {
+        CombatComponent->EquipWeapon(OverlappingWeapon);
+    }
 }
