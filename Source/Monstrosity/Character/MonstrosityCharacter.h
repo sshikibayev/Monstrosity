@@ -70,6 +70,8 @@ private:
     bool DoInputActionsValid();
     void DoJump();
     void Equipped();
+    UFUNCTION(server, reliable)
+    void ServerEqipped();
     void Movement(const struct FInputActionValue& ActionValue);
     void Looking(const struct FInputActionValue& ActionValue);
 };

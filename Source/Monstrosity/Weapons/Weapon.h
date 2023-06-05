@@ -29,8 +29,11 @@ public:
     virtual void Tick(float DeltaTime) override;
 
     void ShowPickupWidget(bool bShowWidget);
+    virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
-    FORCEINLINE void SetWeaponState(EWeaponState NewState) { WeaponState = NewState; }
+    FORCEINLINE TObjectPtr<USphereComponent> GetAreaSphere() const { return AreaSphere; }
+
+    void SetWeaponState(EWeaponState NewState);
 
 protected:
 	virtual void BeginPlay() override;
@@ -56,13 +59,17 @@ protected:
     );
 
 private:
+
+    UFUNCTION()
+    void OnRep_WeaponState();
+
     UPROPERTY(VisibleAnywhere, Category = "Weapon Properties")
     TObjectPtr<USkeletalMeshComponent> WeaponMesh;
 
     UPROPERTY(VisibleAnywhere, Category = "Weapon Properties")
     TObjectPtr<USphereComponent> AreaSphere;
 
-    UPROPERTY(VisibleANywhere, Category = "Weapon Properties")
+    UPROPERTY(ReplicatedUsing = OnRep_WeaponState, VisibleANywhere, Category = "Weapon Properties")
     EWeaponState WeaponState;
 
     UPROPERTY(VisibleAnywhere, Category = "Weapon Properties")

@@ -191,7 +191,22 @@ void AMonstrosityCharacter::Looking(const FInputActionValue& ActionValue)
 
 void AMonstrosityCharacter::Equipped()
 {
-    if (HasAuthority() && CombatComponent)
+    if (CombatComponent)
+    {
+        if (HasAuthority())
+        {
+            CombatComponent->EquipWeapon(OverlappingWeapon);
+        }
+        else
+        {
+            ServerEqipped();
+        }
+    }
+}
+
+void AMonstrosityCharacter::ServerEqipped_Implementation()
+{
+    if (CombatComponent)
     {
         CombatComponent->EquipWeapon(OverlappingWeapon);
     }

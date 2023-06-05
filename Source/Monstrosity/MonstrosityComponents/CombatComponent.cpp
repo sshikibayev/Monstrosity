@@ -2,9 +2,11 @@
 
 
 #include "CombatComponent.h"
+
 #include "Monstrosity/Weapons/Weapon.h"
 #include "Monstrosity/Character/MonstrosityCharacter.h"
 #include "Engine/SkeletalMeshSocket.h"
+#include "Components/SphereComponent.h"
 
 UCombatComponent::UCombatComponent()
 {
@@ -34,6 +36,5 @@ void UCombatComponent::EquipWeapon(const TObjectPtr<AWeapon> WeaponToEquip)
             HandSocket->AttachActor(EquippedWeapon, Character->GetMesh());
         }
         EquippedWeapon->SetOwner(Character);
-        EquippedWeapon->ShowPickupWidget(false);
     }
 }
