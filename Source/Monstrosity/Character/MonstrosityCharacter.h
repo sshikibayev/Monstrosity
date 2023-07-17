@@ -31,20 +31,26 @@ public:
     FORCEINLINE TObjectPtr<UEnhancedInputLocalPlayerSubsystem> GetInputSubsystem(){ return InputSubsystem;}
 
     void SetOverlappingWeapon(TObjectPtr<AWeapon> Weapon);
+    bool IsWeaponEquipped();
+    bool IsAiming();
 
 protected:
     virtual void BeginPlay() override;
 
     UPROPERTY(EditDefaultsOnly, Category = "Controls|Input Mappings")
-    TSoftObjectPtr<UInputMappingContext> IM_Character;
+    TSoftObjectPtr<UInputMappingContext> IMC_Character;
     UPROPERTY(EditDefaultsOnly, Category = "Controls|Input Actions")
     TSoftObjectPtr<UInputAction> IA_Jump;
+    UPROPERTY(EditDefaultsOnly, Category = "Controls|Input Actions")
+    TSoftObjectPtr<UInputAction> IA_Crouch;
     UPROPERTY(EditDefaultsOnly, Category = "Controls|Input Actions")
     TSoftObjectPtr<UInputAction> IA_Equip;
     UPROPERTY(EditDefaultsOnly, Category = "Controls|Input Actions")
     TSoftObjectPtr<UInputAction> IA_InputMove;
     UPROPERTY(EditDefaultsOnly, Category = "Controls|Input Actions")
     TSoftObjectPtr<UInputAction> IA_InputLook;
+    UPROPERTY(EditDefaultsOnly, Category = "Controls|Input Actions")
+    TSoftObjectPtr<UInputAction> IA_Aim;
 
     TArray<TSoftObjectPtr<UInputAction>> AllInputActions;
 
@@ -70,6 +76,9 @@ private:
     bool DoInputActionsValid();
     void DoJump();
     void Equipped();
+    void DoCrouch();
+    void StartAim();
+    void StopAim();
     UFUNCTION(server, reliable)
     void ServerEqipped();
     void Movement(const struct FInputActionValue& ActionValue);

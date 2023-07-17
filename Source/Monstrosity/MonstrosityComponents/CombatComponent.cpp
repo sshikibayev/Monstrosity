@@ -7,6 +7,8 @@
 #include "Monstrosity/Character/MonstrosityCharacter.h"
 #include "Engine/SkeletalMeshSocket.h"
 #include "Components/SphereComponent.h"
+#include "Net/UnrealNetwork.h"
+
 
 UCombatComponent::UCombatComponent()
 {
@@ -16,6 +18,26 @@ UCombatComponent::UCombatComponent()
 void UCombatComponent::BeginPlay()
 {
 	Super::BeginPlay();
+}
+
+void UCombatComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+    Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+    DOREPLIFETIME(UCombatComponent, EquippedWeapon);
+    DOREPLIFETIME(UCombatComponent, bAiming);
+}
+
+void UCombatComponent::SetAiming(bool bNewAiming)
+{
+    bAiming = bNewAiming;
+    ServerSetAiming(bNewAiming);
+}
+
+void UCombatComponent::ServerSetAiming_Implementation(bool bNewAiming)
+{
+    bAiming = bNewAiming;
+
 }
 
 void UCombatComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)

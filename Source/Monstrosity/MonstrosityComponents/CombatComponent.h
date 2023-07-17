@@ -23,8 +23,17 @@ public:
 
 protected:
 	virtual void BeginPlay() override;
+    virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+
+    void SetAiming(bool bNewAiming);
+    UFUNCTION(Server, Reliable)
+    void ServerSetAiming(bool bNewAiming);
 
 private:
     TObjectPtr<AMonstrosityCharacter> Character;
+    UPROPERTY(Replicated)
     TObjectPtr<AWeapon> EquippedWeapon;
+
+    UPROPERTY(Replicated)
+    bool bAiming;
 };

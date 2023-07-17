@@ -40,6 +40,8 @@ AMonstrosityCharacter::AMonstrosityCharacter()
     CombatComponent->SetIsReplicated(true);
 
     bReplicates = true;
+
+    GetCharacterMovement()->NavAgentProps.bCanCrouch = true;
 }
 
 void AMonstrosityCharacter::BeginPlay()
@@ -87,12 +89,22 @@ void AMonstrosityCharacter::SetOverlappingWeapon(TObjectPtr<AWeapon> Weapon)
     }
 }
 
+bool AMonstrosityCharacter::IsWeaponEquipped()
+{
+    return (CombatComponent && CombatComponent->EquippedWeapon);
+}
+
+bool AMonstrosityCharacter::IsAiming()
+{
+    return (CombatComponent && CombatComponent->bAiming);
+}
+
 void AMonstrosityCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
     Super::SetupPlayerInputComponent(PlayerInputComponent);
 
     PrepareInputSubsystem();
-    AddingMappingContext(InputSubsystem, IM_Character);
+    AddingMappingContext(InputSubsystem, IMC_Character);
     BindInputActions(PlayerInputComponent);
 }
 
@@ -140,15 +152,19 @@ void AMonstrosityCharacter::BindInputActions(const TObjectPtr<UInputComponent> P
     if (DoInputActionsValid())
     {
         PlayerEnhancedInputComponent->BindAction(IA_Jump.LoadSynchronous(), ETriggerEvent::Started, this, &ThisClass::DoJump);
+        PlayerEnhancedInputComponent->BindAction(IA_Crouch.LoadSynchronous(), ETriggerEvent::Started, this, &ThisClass::DoCrouch);
         PlayerEnhancedInputComponent->BindAction(IA_Equip.LoadSynchronous(), ETriggerEvent::Started, this, &ThisClass::Equipped);
         PlayerEnhancedInputComponent->BindAction(IA_InputMove.LoadSynchronous(), ETriggerEvent::Triggered, this, &ThisClass::Movement);
         PlayerEnhancedInputComponent->BindAction(IA_InputLook.LoadSynchronous(), ETriggerEvent::Triggered, this, &ThisClass::Looking);
+        PlayerEnhancedInputComponent->BindAction(IA_Aim.LoadSynchronous(), ETriggerEvent::Started, this, &ThisClass::StartAim);
+        PlayerEnhancedInputComponent->BindAction(IA_Aim.LoadSynchronous(), ETriggerEvent::Completed , this, &ThisClass::StopAim);
     }
 }
 
 bool AMonstrosityCharacter::DoInputActionsValid()
 {
     AllInputActions.Emplace(IA_Jump);
+    AllInputActions.Emplace(IA_Crouch);
     AllInputActions.Emplace(IA_InputMove);
     AllInputActions.Emplace(IA_InputLook);
     AllInputActions.Emplace(IA_Equip);
@@ -209,5 +225,33 @@ void AMonstrosityCharacter::ServerEqipped_Implementation()
     if (CombatComponent)
     {
         CombatComponent->EquipWeapon(OverlappingWeapon);
+    }
+}
+
+void AMonstrosityCharacter::DoCrouch()
+{
+    if (bIsCrouched)
+    {
+        UnCrouch();
+    }
+    else
+    {
+        Crouch();
+    }
+}
+
+void AMonstrosityCharacter::StartAim()
+{
+    if (CombatComponent)
+    {
+        CombatComponent->SetAiming(true);
+    }
+}
+
+void AMonstrosityCharacter::StopAim()
+{
+    if (CombatComponent)
+    {
+        CombatComponent->SetAiming(false);
     }
 }

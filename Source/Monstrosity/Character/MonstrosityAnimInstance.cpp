@@ -30,5 +30,8 @@ void UMonstrosityAnimInstance::NativeUpdateAnimation(float DeltaTime)
 
         bIsInAir = MonstrosityCharacter->GetCharacterMovement()->IsFalling();
         bIsAccelerating = MonstrosityCharacter->GetCharacterMovement()->GetCurrentAcceleration().Size() > 0 ? true : false;
+        bWeaponEquipped = MonstrosityCharacter->IsWeaponEquipped();
+        bCrouched = MonstrosityCharacter->bIsCrouched;
+        bAiming = MonstrosityCharacter->IsAiming();
     }
 }
