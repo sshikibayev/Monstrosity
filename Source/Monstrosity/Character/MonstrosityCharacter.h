@@ -29,6 +29,8 @@ public:
     virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
     FORCEINLINE TObjectPtr<UEnhancedInputLocalPlayerSubsystem> GetInputSubsystem(){ return InputSubsystem;}
+    FORCEINLINE float GetAOYaw() const { return AOYaw; }
+    FORCEINLINE float GetAOPitch() const { return AOPitch; }
 
     void SetOverlappingWeapon(TObjectPtr<AWeapon> Weapon);
     bool IsWeaponEquipped();
@@ -54,6 +56,8 @@ protected:
 
     TArray<TSoftObjectPtr<UInputAction>> AllInputActions;
 
+    void AimOffset(float DeltaTime);
+
 private:
     UPROPERTY(VisibleAnywhere, Category = Camera)
     TObjectPtr<USpringArmComponent> CameraBoom;
@@ -64,6 +68,10 @@ private:
     TObjectPtr<UWidgetComponent> OverheadWidget;
     UPROPERTY(VisibleAnywhere)
     TObjectPtr<UCombatComponent> CombatComponent;
+
+    float AOYaw;
+    float AOPitch;
+    FRotator StartingAimRotation;
 
     UPROPERTY(ReplicatedUsing = OnRep_OverlappingWeapon)
     TObjectPtr<AWeapon> OverlappingWeapon;

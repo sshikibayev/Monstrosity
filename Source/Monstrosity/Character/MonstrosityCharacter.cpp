@@ -15,6 +15,8 @@
 #include "Net/UnrealNetwork.h"
 #include "Monstrosity/Weapons/Weapon.h"
 #include "Monstrosity/MonstrosityComponents/CombatComponent.h"
+#include "Components/CapsuleComponent.h"
+#include "Kismet/KismetMathLibrary.h"
 
 
 AMonstrosityCharacter::AMonstrosityCharacter()
@@ -42,6 +44,8 @@ AMonstrosityCharacter::AMonstrosityCharacter()
     bReplicates = true;
 
     GetCharacterMovement()->NavAgentProps.bCanCrouch = true;
+    GetCapsuleComponent()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);
+    GetMesh()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);
 }
 
 void AMonstrosityCharacter::BeginPlay()
@@ -52,6 +56,8 @@ void AMonstrosityCharacter::BeginPlay()
 void AMonstrosityCharacter::Tick(float DeltaTime)
 {
     Super::Tick(DeltaTime);
+
+    AimOffset(DeltaTime);
 }
 
 void AMonstrosityCharacter::PostInitializeComponents()
@@ -106,6 +112,41 @@ void AMonstrosityCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInp
     PrepareInputSubsystem();
     AddingMappingContext(InputSubsystem, IMC_Character);
     BindInputActions(PlayerInputComponent);
+}
+
+void AMonstrosityCharacter::AimOffset(float DeltaTime)
+{
+    if (CombatComponent && !CombatComponent->EquippedWeapon)
+        return;
+
+    FVector Velocity = GetVelocity();
+    Velocity.Z = 0.0f;
+    float Speed = Velocity.Size();
+    bool bInAir = GetCharacterMovement()->IsFalling();
+
+    if (Speed == 0.0f && !bInAir)
+    {
+        FRotator CurrentAimRotation = FRotator(0.0f, GetBaseAimRotation().Yaw, 0.0f);
+        FRotator DeltaRotation = UKismetMathLibrary::NormalizedDeltaRotator(CurrentAimRotation, StartingAimRotation);
+        AOYaw = DeltaRotation.Yaw;
+        bUseControllerRotationYaw = false;
+    }
+
+    if (Speed > 0.0f || bInAir)
+    {
+        StartingAimRotation = FRotator(0.0f, GetBaseAimRotation().Yaw, 0.0f);
+        AOYaw = 0.0f;
+        bUseControllerRotationYaw = true;
+    }
+
+    AOPitch = GetBaseAimRotation().Pitch;
+    if (AOPitch > 90.0f && !IsLocallyControlled())
+    {
+        // Map pitch [270, 360) to [-90, 0)
+        FVector2D InRange(270.0f, 360.0f);
+        FVector2D OutRange(-90.0f, 0.0f);
+        AOPitch = FMath::GetMappedRangeValueClamped(InRange, OutRange, AOPitch);
+    }
 }
 
 void AMonstrosityCharacter::OnRep_OverlappingWeapon(AWeapon* LastWeapon)
