@@ -31,6 +31,7 @@ public:
     FORCEINLINE TObjectPtr<UEnhancedInputLocalPlayerSubsystem> GetInputSubsystem(){ return InputSubsystem;}
     FORCEINLINE float GetAOYaw() const { return AOYaw; }
     FORCEINLINE float GetAOPitch() const { return AOPitch; }
+    TObjectPtr<AWeapon> GetEquippedWeapon() const;
 
     void SetOverlappingWeapon(TObjectPtr<AWeapon> Weapon);
     bool IsWeaponEquipped();
@@ -77,6 +78,8 @@ private:
     TObjectPtr<AWeapon> OverlappingWeapon;
     UFUNCTION()
     void OnRep_OverlappingWeapon(AWeapon* LastWeapon);
+    UFUNCTION(Server, Reliable)
+    void ServerEqipped();
 
     void PrepareInputSubsystem();
     void AddingMappingContext(TObjectPtr<UEnhancedInputLocalPlayerSubsystem> Subsystem, const TSoftObjectPtr<UInputMappingContext> MappingContext);
@@ -87,8 +90,6 @@ private:
     void DoCrouch();
     void StartAim();
     void StopAim();
-    UFUNCTION(server, reliable)
-    void ServerEqipped();
     void Movement(const struct FInputActionValue& ActionValue);
     void Looking(const struct FInputActionValue& ActionValue);
 };

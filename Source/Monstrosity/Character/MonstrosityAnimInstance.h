@@ -8,6 +8,7 @@
 #include "MonstrosityAnimInstance.generated.h"
 
 class AMonstrosityCharacter;
+class AWeapon;
 
 UCLASS()
 class MONSTROSITY_API UMonstrosityAnimInstance : public UAnimInstance
@@ -42,9 +43,11 @@ private:
     float AOYaw;
     UPROPERTY(BlueprintReadOnly, Category = "Movement", meta = (AllowPrivateAccess = "true"))
     float AOPitch;
+    UPROPERTY(BlueprintReadOnly, Category = "Movement", meta = (AllowPrivateAccess = "true"))
+    FTransform LeftHandTransform;
 
+    TObjectPtr<AWeapon> EqippedWeapon;
     FRotator CharacterRotationLastFrame;
     FRotator CharacterRotation;
     FRotator DeltaRotation;
-
 };

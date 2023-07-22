@@ -77,6 +77,13 @@ void AMonstrosityCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>
     DOREPLIFETIME_CONDITION(AMonstrosityCharacter, OverlappingWeapon, COND_OwnerOnly);
 }
 
+TObjectPtr<AWeapon> AMonstrosityCharacter::GetEquippedWeapon() const
+{
+    if (!CombatComponent)
+        return nullptr;
+    return CombatComponent->EquippedWeapon;
+}
+
 void AMonstrosityCharacter::SetOverlappingWeapon(TObjectPtr<AWeapon> Weapon)
 {
     if (OverlappingWeapon)
@@ -127,8 +134,8 @@ void AMonstrosityCharacter::AimOffset(float DeltaTime)
     if (Speed == 0.0f && !bInAir)
     {
         FRotator CurrentAimRotation = FRotator(0.0f, GetBaseAimRotation().Yaw, 0.0f);
-        FRotator DeltaRotation = UKismetMathLibrary::NormalizedDeltaRotator(CurrentAimRotation, StartingAimRotation);
-        AOYaw = DeltaRotation.Yaw;
+        FRotator DeltaAimRotation = UKismetMathLibrary::NormalizedDeltaRotator(CurrentAimRotation, StartingAimRotation);
+        AOYaw = DeltaAimRotation.Yaw;
         bUseControllerRotationYaw = false;
     }
 

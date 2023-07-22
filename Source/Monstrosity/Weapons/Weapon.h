@@ -32,6 +32,7 @@ public:
     virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
     FORCEINLINE TObjectPtr<USphereComponent> GetAreaSphere() const { return AreaSphere; }
+    FORCEINLINE TObjectPtr<USkeletalMeshComponent> GetWeaponMesh() const { return WeaponMesh; }
 
     void SetWeaponState(EWeaponState NewState);
 
