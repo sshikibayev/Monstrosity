@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+#include "../MonstrosityTypes/TurningInPlace.h"
 
 #include "MonstrosityCharacter.generated.h"
 
@@ -31,6 +32,7 @@ public:
     FORCEINLINE TObjectPtr<UEnhancedInputLocalPlayerSubsystem> GetInputSubsystem(){ return InputSubsystem;}
     FORCEINLINE float GetAOYaw() const { return AOYaw; }
     FORCEINLINE float GetAOPitch() const { return AOPitch; }
+    FORCEINLINE ETurningInPlace GetTurningInPlace() const { return TurningInPlace; }
     TObjectPtr<AWeapon> GetEquippedWeapon() const;
 
     void SetOverlappingWeapon(TObjectPtr<AWeapon> Weapon);
@@ -70,7 +72,10 @@ private:
     UPROPERTY(VisibleAnywhere)
     TObjectPtr<UCombatComponent> CombatComponent;
 
+    ETurningInPlace TurningInPlace;
+
     float AOYaw;
+    float InterpAOYaw;
     float AOPitch;
     FRotator StartingAimRotation;
 
@@ -92,4 +97,5 @@ private:
     void StopAim();
     void Movement(const struct FInputActionValue& ActionValue);
     void Looking(const struct FInputActionValue& ActionValue);
+    void TurnInPlace(float DeltaTime);
 };

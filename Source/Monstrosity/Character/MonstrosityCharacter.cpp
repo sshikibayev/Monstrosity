@@ -46,6 +46,8 @@ AMonstrosityCharacter::AMonstrosityCharacter()
     GetCharacterMovement()->NavAgentProps.bCanCrouch = true;
     GetCapsuleComponent()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);
     GetMesh()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);
+
+    TurningInPlace = ETurningInPlace::ETIP_NotTurning;
 }
 
 void AMonstrosityCharacter::BeginPlay()
@@ -136,7 +138,12 @@ void AMonstrosityCharacter::AimOffset(float DeltaTime)
         FRotator CurrentAimRotation = FRotator(0.0f, GetBaseAimRotation().Yaw, 0.0f);
         FRotator DeltaAimRotation = UKismetMathLibrary::NormalizedDeltaRotator(CurrentAimRotation, StartingAimRotation);
         AOYaw = DeltaAimRotation.Yaw;
-        bUseControllerRotationYaw = false;
+        if (TurningInPlace == ETurningInPlace::ETIP_NotTurning)
+        {
+            InterpAOYaw = AOYaw;
+        }
+        bUseControllerRotationYaw = true;
+        TurnInPlace(DeltaTime);
     }
 
     if (Speed > 0.0f || bInAir)
@@ -144,6 +151,7 @@ void AMonstrosityCharacter::AimOffset(float DeltaTime)
         StartingAimRotation = FRotator(0.0f, GetBaseAimRotation().Yaw, 0.0f);
         AOYaw = 0.0f;
         bUseControllerRotationYaw = true;
+        TurningInPlace = ETurningInPlace::ETIP_NotTurning;
     }
 
     AOPitch = GetBaseAimRotation().Pitch;
@@ -301,5 +309,29 @@ void AMonstrosityCharacter::StopAim()
     if (CombatComponent)
     {
         CombatComponent->SetAiming(false);
+    }
+}
+
+void AMonstrosityCharacter::TurnInPlace(float DeltaTime)
+{
+    if (AOYaw > 90.0f)
+    {
+        TurningInPlace = ETurningInPlace::ETIP_Right;
+    }
+    else if (AOYaw < -90.0f)
+    {
+        TurningInPlace = ETurningInPlace::ETIP_Left;
+    }
+
+    if (TurningInPlace != ETurningInPlace::ETIP_NotTurning)
+    {
+        InterpAOYaw = FMath::FInterpTo(InterpAOYaw, 0.0f, DeltaTime, 5.0f);
+        AOYaw = InterpAOYaw;
+
+        if (FMath::Abs(AOYaw) < 15.0f)
+        {
+            TurningInPlace = ETurningInPlace::ETIP_NotTurning;
+            StartingAimRotation = FRotator(0.0f, GetBaseAimRotation().Yaw, 0.0f);
+        }
     }
 }

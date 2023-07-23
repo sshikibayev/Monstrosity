@@ -33,9 +33,11 @@ void UMonstrosityAnimInstance::NativeUpdateAnimation(float DeltaTime)
         bIsInAir = MonstrosityCharacter->GetCharacterMovement()->IsFalling();
         bIsAccelerating = MonstrosityCharacter->GetCharacterMovement()->GetCurrentAcceleration().Size() > 0 ? true : false;
         bWeaponEquipped = MonstrosityCharacter->IsWeaponEquipped();
-        EqippedWeapon = MonstrosityCharacter->GetEquippedWeapon();
+        EquippedWeapon = MonstrosityCharacter->GetEquippedWeapon();
         bCrouched = MonstrosityCharacter->bIsCrouched;
         bAiming = MonstrosityCharacter->IsAiming();
+        TurningInPlace = MonstrosityCharacter->GetTurningInPlace();
+
         FRotator AimRotation = MonstrosityCharacter->GetBaseAimRotation();
         FRotator MovementRotation = UKismetMathLibrary::MakeRotFromX(MonstrosityCharacter->GetVelocity());
         FRotator DeltaRot = UKismetMathLibrary::NormalizedDeltaRotator(MovementRotation, AimRotation);
@@ -53,9 +55,9 @@ void UMonstrosityAnimInstance::NativeUpdateAnimation(float DeltaTime)
         AOYaw = MonstrosityCharacter->GetAOYaw();
         AOPitch = MonstrosityCharacter->GetAOPitch();
 
-        if (bWeaponEquipped && EqippedWeapon && EqippedWeapon->GetWeaponMesh() && MonstrosityCharacter->GetMesh())
+        if (bWeaponEquipped && EquippedWeapon && EquippedWeapon->GetWeaponMesh() && MonstrosityCharacter->GetMesh())
         {
-            LeftHandTransform = EqippedWeapon->GetWeaponMesh()->GetSocketTransform(FName("LeftHandSocket"), ERelativeTransformSpace::RTS_World);
+            LeftHandTransform = EquippedWeapon->GetWeaponMesh()->GetSocketTransform(FName("LeftHandSocket"), ERelativeTransformSpace::RTS_World);
             FVector OutPosition;
             FRotator OutRotation;
             MonstrosityCharacter->GetMesh()->TransformToBoneSpace(FName("hand_r"), LeftHandTransform.GetLocation(), FRotator::ZeroRotator, OutPosition, OutRotation);

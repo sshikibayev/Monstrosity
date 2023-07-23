@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Animation/AnimInstance.h"
+#include "../MonstrosityTypes/TurningInPlace.h"
 
 #include "MonstrosityAnimInstance.generated.h"
 
@@ -45,8 +46,10 @@ private:
     float AOPitch;
     UPROPERTY(BlueprintReadOnly, Category = "Movement", meta = (AllowPrivateAccess = "true"))
     FTransform LeftHandTransform;
+    UPROPERTY(BlueprintReadOnly, Category = "Movement", meta = (AllowPrivateAccess = "true"))
+    ETurningInPlace TurningInPlace;
 
-    TObjectPtr<AWeapon> EqippedWeapon;
+    TObjectPtr<AWeapon> EquippedWeapon;
     FRotator CharacterRotationLastFrame;
     FRotator CharacterRotation;
     FRotator DeltaRotation;
