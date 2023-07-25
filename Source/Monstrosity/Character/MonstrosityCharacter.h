@@ -60,6 +60,7 @@ protected:
     TArray<TSoftObjectPtr<UInputAction>> AllInputActions;
 
     void AimOffset(float DeltaTime);
+    virtual void Jump() override;
 
 private:
     UPROPERTY(VisibleAnywhere, Category = Camera)
@@ -90,7 +91,6 @@ private:
     void AddingMappingContext(TObjectPtr<UEnhancedInputLocalPlayerSubsystem> Subsystem, const TSoftObjectPtr<UInputMappingContext> MappingContext);
     void BindInputActions(const TObjectPtr<UInputComponent> PlayerInputComponent);
     bool DoInputActionsValid();
-    void DoJump();
     void Equipped();
     void DoCrouch();
     void StartAim();

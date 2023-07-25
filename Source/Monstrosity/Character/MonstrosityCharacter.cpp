@@ -34,6 +34,7 @@ AMonstrosityCharacter::AMonstrosityCharacter()
 
     bUseControllerRotationYaw = false;
     GetCharacterMovement()->bOrientRotationToMovement = true;
+    GetCharacterMovement()->RotationRate = FRotator(0.0f, 0.0f, 720.0f);
 
     OverheadWidget = CreateDefaultSubobject<UWidgetComponent>("OverheadWidget");
     OverheadWidget->SetupAttachment(RootComponent);
@@ -42,6 +43,8 @@ AMonstrosityCharacter::AMonstrosityCharacter()
     CombatComponent->SetIsReplicated(true);
 
     bReplicates = true;
+    NetUpdateFrequency = 100.0f;
+    MinNetUpdateFrequency = 50.0f;
 
     GetCharacterMovement()->NavAgentProps.bCanCrouch = true;
     GetCapsuleComponent()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);
@@ -164,6 +167,18 @@ void AMonstrosityCharacter::AimOffset(float DeltaTime)
     }
 }
 
+void AMonstrosityCharacter::Jump()
+{
+    if (bIsCrouched)
+    {
+        UnCrouch();
+    }
+    else
+    {
+        Super::Jump();
+    }
+}
+
 void AMonstrosityCharacter::OnRep_OverlappingWeapon(AWeapon* LastWeapon)
 {
     if (OverlappingWeapon)
@@ -207,7 +222,7 @@ void AMonstrosityCharacter::BindInputActions(const TObjectPtr<UInputComponent> P
 
     if (DoInputActionsValid())
     {
-        PlayerEnhancedInputComponent->BindAction(IA_Jump.LoadSynchronous(), ETriggerEvent::Started, this, &ThisClass::DoJump);
+        PlayerEnhancedInputComponent->BindAction(IA_Jump.LoadSynchronous(), ETriggerEvent::Started, this, &ThisClass::Jump);
         PlayerEnhancedInputComponent->BindAction(IA_Crouch.LoadSynchronous(), ETriggerEvent::Started, this, &ThisClass::DoCrouch);
         PlayerEnhancedInputComponent->BindAction(IA_Equip.LoadSynchronous(), ETriggerEvent::Started, this, &ThisClass::Equipped);
         PlayerEnhancedInputComponent->BindAction(IA_InputMove.LoadSynchronous(), ETriggerEvent::Triggered, this, &ThisClass::Movement);
@@ -235,11 +250,6 @@ bool AMonstrosityCharacter::DoInputActionsValid()
     }
 
     return true;
-}
-
-void AMonstrosityCharacter::DoJump()
-{
-    Jump();
 }
 
 void AMonstrosityCharacter::Movement(const FInputActionValue& ActionValue)
