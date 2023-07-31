@@ -16,6 +16,7 @@ class UEnhancedInputLocalPlayerSubsystem;
 class UWidgetComponent;
 class AWeapon;
 class UCombatComponent;
+class UAnimMontage;
 
 UCLASS()
 class MONSTROSITY_API AMonstrosityCharacter : public ACharacter
@@ -38,6 +39,7 @@ public:
     void SetOverlappingWeapon(TObjectPtr<AWeapon> Weapon);
     bool IsWeaponEquipped();
     bool IsAiming();
+    void PlayFireMontage(bool bAiming);
 
 protected:
     virtual void BeginPlay() override;
@@ -56,6 +58,8 @@ protected:
     TSoftObjectPtr<UInputAction> IA_InputLook;
     UPROPERTY(EditDefaultsOnly, Category = "Controls|Input Actions")
     TSoftObjectPtr<UInputAction> IA_Aim;
+    UPROPERTY(EditDefaultsOnly, Category = "Controls|Input Actions")
+    TSoftObjectPtr<UInputAction> IA_Fire;
 
     TArray<TSoftObjectPtr<UInputAction>> AllInputActions;
 
@@ -72,6 +76,8 @@ private:
     TObjectPtr<UWidgetComponent> OverheadWidget;
     UPROPERTY(VisibleAnywhere)
     TObjectPtr<UCombatComponent> CombatComponent;
+    UPROPERTY(EditAnywhere,Category = Combat)
+    TObjectPtr<UAnimMontage> FireWeaponMontage;
 
     ETurningInPlace TurningInPlace;
 
@@ -95,6 +101,9 @@ private:
     void DoCrouch();
     void StartAim();
     void StopAim();
+    void StartFire();
+    void StopFire();
+
     void Movement(const struct FInputActionValue& ActionValue);
     void Looking(const struct FInputActionValue& ActionValue);
     void TurnInPlace(float DeltaTime);

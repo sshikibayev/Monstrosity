@@ -32,6 +32,8 @@ protected:
     UFUNCTION()
     void OnRep_EquippedWeapon();
 
+    void ToggleFire(bool bStarted);
+
 private:
     TObjectPtr<AMonstrosityCharacter> Character;
     UPROPERTY(ReplicatedUsing = OnRep_EquippedWeapon)
@@ -43,4 +45,6 @@ private:
     float BaseWalkSpeed;
     UPROPERTY(EditAnywhere)
     float AimWalkSpeed;
+
+    bool bFireStarted;
 };

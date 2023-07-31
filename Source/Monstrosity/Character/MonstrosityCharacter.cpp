@@ -17,7 +17,7 @@
 #include "Monstrosity/MonstrosityComponents/CombatComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Kismet/KismetMathLibrary.h"
-
+#include "MonstrosityAnimInstance.h"
 
 AMonstrosityCharacter::AMonstrosityCharacter()
 {
@@ -115,6 +115,20 @@ bool AMonstrosityCharacter::IsWeaponEquipped()
 bool AMonstrosityCharacter::IsAiming()
 {
     return (CombatComponent && CombatComponent->bAiming);
+}
+
+void AMonstrosityCharacter::PlayFireMontage(bool bAiming)
+{
+    if (CombatComponent && CombatComponent->EquippedWeapon && GetMesh())
+    {
+        TObjectPtr<UAnimInstance> AnimInstance = GetMesh()->GetAnimInstance();
+        if (AnimInstance && FireWeaponMontage)
+        {
+            AnimInstance->Montage_Play(FireWeaponMontage);
+            FName SectionName{ bAiming ? FName("RifleAim") : FName("RifleHip") };
+            AnimInstance->Montage_JumpToSection(SectionName);
+        }
+    }
 }
 
 void AMonstrosityCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -229,6 +243,8 @@ void AMonstrosityCharacter::BindInputActions(const TObjectPtr<UInputComponent> P
         PlayerEnhancedInputComponent->BindAction(IA_InputLook.LoadSynchronous(), ETriggerEvent::Triggered, this, &ThisClass::Looking);
         PlayerEnhancedInputComponent->BindAction(IA_Aim.LoadSynchronous(), ETriggerEvent::Started, this, &ThisClass::StartAim);
         PlayerEnhancedInputComponent->BindAction(IA_Aim.LoadSynchronous(), ETriggerEvent::Completed , this, &ThisClass::StopAim);
+        PlayerEnhancedInputComponent->BindAction(IA_Fire.LoadSynchronous(), ETriggerEvent::Started, this, &ThisClass::StartFire);
+        PlayerEnhancedInputComponent->BindAction(IA_Fire.LoadSynchronous(), ETriggerEvent::Completed, this, &ThisClass::StopFire);
     }
 }
 
@@ -239,6 +255,7 @@ bool AMonstrosityCharacter::DoInputActionsValid()
     AllInputActions.Emplace(IA_InputMove);
     AllInputActions.Emplace(IA_InputLook);
     AllInputActions.Emplace(IA_Equip);
+    AllInputActions.Emplace(IA_Fire);
 
     for (auto Action : AllInputActions)
     {
@@ -319,6 +336,22 @@ void AMonstrosityCharacter::StopAim()
     if (CombatComponent)
     {
         CombatComponent->SetAiming(false);
+    }
+}
+
+void AMonstrosityCharacter::StartFire()
+{
+    if (CombatComponent)
+    {
+        CombatComponent->ToggleFire(true);
+    }
+}
+
+void AMonstrosityCharacter::StopFire()
+{
+    if (CombatComponent)
+    {
+        CombatComponent->ToggleFire(false);
     }
 }
 

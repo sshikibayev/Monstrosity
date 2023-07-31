@@ -65,6 +65,16 @@ void UCombatComponent::OnRep_EquippedWeapon()
     }
 }
 
+void UCombatComponent::ToggleFire(bool bStarted)
+{
+    bFireStarted = bStarted;
+
+    if (Character && bFireStarted)
+    {
+        Character->PlayFireMontage(bAiming);
+    }
+}
+
 
 void UCombatComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
