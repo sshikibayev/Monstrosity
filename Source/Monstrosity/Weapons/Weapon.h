@@ -18,6 +18,7 @@ enum class EWeaponState : uint8
 
 class USphereComponent;
 class UWidgetComponent;
+class UAnimationAsset;
 
 UCLASS()
 class MONSTROSITY_API AWeapon : public AActor
@@ -28,6 +29,7 @@ public:
 	AWeapon();
     virtual void Tick(float DeltaTime) override;
 
+    void Fire();
     void ShowPickupWidget(bool bShowWidget);
     virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
@@ -60,12 +62,11 @@ protected:
     );
 
 private:
-
-    UFUNCTION()
-    void OnRep_WeaponState();
-
     UPROPERTY(VisibleAnywhere, Category = "Weapon Properties")
     TObjectPtr<USkeletalMeshComponent> WeaponMesh;
+
+    UPROPERTY(EditAnywhere, Category = "Weapon Properties")
+    TObjectPtr<UAnimationAsset> FireAnimation;
 
     UPROPERTY(VisibleAnywhere, Category = "Weapon Properties")
     TObjectPtr<USphereComponent> AreaSphere;
@@ -75,4 +76,7 @@ private:
 
     UPROPERTY(VisibleAnywhere, Category = "Weapon Properties")
     TObjectPtr<UWidgetComponent> PickupWidget;
+
+    UFUNCTION()
+    void OnRep_WeaponState();
 };

@@ -13,7 +13,7 @@
 
 UCombatComponent::UCombatComponent()
 {
-	PrimaryComponentTick.bCanEverTick = false;
+    PrimaryComponentTick.bCanEverTick = false;
 
     BaseWalkSpeed = 600.0f;
     AimWalkSpeed = 400.0f;
@@ -21,7 +21,7 @@ UCombatComponent::UCombatComponent()
 
 void UCombatComponent::BeginPlay()
 {
-	Super::BeginPlay();
+    Super::BeginPlay();
 
     if (Character)
     {
@@ -56,6 +56,33 @@ void UCombatComponent::ServerSetAiming_Implementation(bool bNewAiming)
     }
 }
 
+void UCombatComponent::ToggleFire(bool bStarted)
+{
+    bFireStarted = bStarted;
+
+    if (bFireStarted)
+    {
+        ServerFire();
+    }
+}
+
+void UCombatComponent::ServerFire_Implementation()
+{
+    MulticastFire();
+}
+
+void UCombatComponent::MulticastFire_Implementation()
+{
+    if (EquippedWeapon == nullptr)
+        return;
+
+    if (Character)
+    {
+        Character->PlayFireMontage(bAiming);
+        EquippedWeapon->Fire();
+    }
+}
+
 void UCombatComponent::OnRep_EquippedWeapon()
 {
     if (EquippedWeapon && Character)
@@ -65,20 +92,9 @@ void UCombatComponent::OnRep_EquippedWeapon()
     }
 }
 
-void UCombatComponent::ToggleFire(bool bStarted)
-{
-    bFireStarted = bStarted;
-
-    if (Character && bFireStarted)
-    {
-        Character->PlayFireMontage(bAiming);
-    }
-}
-
-
 void UCombatComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
-	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+    Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 }
 
 void UCombatComponent::EquipWeapon(const TObjectPtr<AWeapon> WeaponToEquip)

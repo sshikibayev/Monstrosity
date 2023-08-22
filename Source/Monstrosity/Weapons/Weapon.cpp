@@ -7,6 +7,9 @@
 #include "Components/WidgetComponent.h"
 #include "Monstrosity/Character/MonstrosityCharacter.h"
 #include "Net/UnrealNetwork.h"
+#include "Animation/AnimationAsset.h"
+#include "Components/SkeletalMeshComponent.h"
+
 
 AWeapon::AWeapon()
 {
@@ -77,6 +80,14 @@ void AWeapon::SetWeaponState(EWeaponState NewState)
             break;
         default:
             break;
+    }
+}
+
+void AWeapon::Fire()
+{
+    if (WeaponMesh && FireAnimation)
+    {
+        WeaponMesh->PlayAnimation(FireAnimation, false);
     }
 }
 

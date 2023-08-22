@@ -29,6 +29,14 @@ protected:
     UFUNCTION(Server, Reliable)
     void ServerSetAiming(bool bNewAiming);
 
+    UFUNCTION(Client, Reliable)
+    void ServerFire();
+
+    void Fire();
+
+    UFUNCTION(NetMulticast, Reliable)
+    void MulticastFire();
+
     UFUNCTION()
     void OnRep_EquippedWeapon();
 
